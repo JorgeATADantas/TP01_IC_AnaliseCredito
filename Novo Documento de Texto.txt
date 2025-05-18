@@ -1,0 +1,307 @@
+#Amostra df_01
+df_01_amostrado = df_01.sample(frac=0.2, random_state=42)  # Seleciona 20% do DataFrame
+
+
+#Removendo colunas duplicadas
+lista_colunas_duplicadas = [137]
+df_01_amostrado.drop(df_01_amostrado.columns[lista_colunas_duplicadas], axis=1, inplace = True)
+
+#Divisão treino e teste
+X_train_df_01_amostrado =  df_01_amostrado.drop(columns={"TARGET"})
+y_train_df_01_amostrado =  df_01_amostrado.TARGET
+
+
+#Amostra df_02
+df_02_amostrado = df_02.sample(frac=0.2, random_state=42)  # Seleciona 20% do DataFrame
+
+
+#Removendo colunas duplicadas
+lista_colunas_duplicadas = [129, 158, 141, 123, 162, 130, 128, 126, 124]
+df_02_amostrado.drop(df_02_amostrado.columns[lista_colunas_duplicadas], axis=1, inplace = True)
+
+# Limpar nomes das colunas (remover caracteres especiais inválidos para JSON)
+import re
+df_02_amostrado.columns = [re.sub(r'[^\w]', '', col) for col in df_02_amostrado.columns]
+
+#Divisão treino e teste
+X_train_df_02_amostrado =  df_02_amostrado.drop(columns={"TARGET"})
+y_train_df_02_amostrado =  df_02_amostrado.TARGET
+
+#Amostra df_03
+df_03_amostrado = df_03.sample(frac=0.2, random_state=42)  # Seleciona 20% do DataFrame
+
+#Removendo colunas duplicadas
+lista_colunas_duplicadas = [158, 123, 124, 126, 128, 129, 130, 141]
+df_03_amostrado.drop(df_03_amostrado.columns[lista_colunas_duplicadas], axis=1, inplace = True)
+
+# Limpar nomes das colunas (remover caracteres especiais inválidos para JSON)
+import re
+df_03_amostrado.columns = [re.sub(r'[^\w]', '', col) for col in df_03_amostrado.columns]
+
+#Divisão treino e teste
+X_train_df_03_amostrado =  df_03_amostrado.drop(columns={"TARGET"})
+y_train_df_03_amostrado =  df_03_amostrado.TARGET
+
+#Amostra df_04
+df_04_amostrado = df_04.sample(frac=0.2, random_state=42)
+
+
+#Removendo colunas duplicadas
+lista_colunas_duplicadas = [158, 123, 124, 126, 128, 129, 130, 141, 177]
+df_04_amostrado.drop(df_04_amostrado.columns[lista_colunas_duplicadas], axis=1, inplace = True)
+
+# Limpar nomes das colunas (remover caracteres especiais inválidos para JSON)
+import re
+df_04_amostrado.columns = [re.sub(r'[^\w]', '', col) for col in df_04_amostrado.columns]
+
+
+#Divisão treino e teste
+X_train_df_04_amostrado =  df_04_amostrado.drop(columns={"TARGET"})
+y_train_df_04_amostrado =  df_04_amostrado.TARGET
+
+
+# 1. Treinamento Individual dos Classificadores
+
+#Importanto as Bibliotecas dos classificadores
+from xgboost import XGBClassifier, XGBRegressor
+from lightgbm import LGBMClassifier, LGBMRegressor
+from catboost import CatBoostClassifier, CatBoostRegressor, Pool
+
+#Lista dos Modelos por Classificador
+modelos =   [('XGBOOST  - Config.01 - random_state=42, learning_rate = 0.3, max_depth = 6', XGBClassifier(random_state=42, learning_rate = 0.3, max_depth = 6)), 
+             #('XGBOOST  - Config.02 - random_state=42, learning_rate = 0.3, max_depth = 8', XGBClassifier(random_state=42, learning_rate = 0.3, max_depth = 8)), 
+             #('XGBOOST  - Config.03 - random_state=42, learning_rate = 0.2, max_depth = 6', XGBClassifier(random_state=42, learning_rate = 0.2, max_depth = 6)), 
+             #('XGBOOST  - Config.04 - random_state=42, learning_rate = 0.2, max_depth = 8', XGBClassifier(random_state=42, learning_rate = 0.2, max_depth = 8)), 
+             ('LIGHTGBM - Config.01 - random_state=42, learning_rate = 0.3, max_depth = 6', LGBMClassifier(random_state=42, learning_rate = 0.3, max_depth = 6, force_col_wise=True)), 
+             #('LIGHTGBM - Config.02 - random_state=42, learning_rate = 0.3, max_depth = 8', LGBMClassifier(random_state=42, learning_rate = 0.3, max_depth = 8, force_col_wise=True)), 
+             #('LIGHTGBM - Config.03 - random_state=42, learning_rate = 0.2, max_depth = 6', LGBMClassifier(random_state=42, learning_rate = 0.2, max_depth = 6, force_col_wise=True)), 
+             #('LIGHTGBM - Config.04 - random_state=42, learning_rate = 0.2, max_depth = 8', LGBMClassifier(random_state=42, learning_rate = 0.2, max_depth = 8, force_col_wise=True)), 
+             ('CATBOOST - Config.01 - random_state=42, learning_rate = 0.3, max_depth = 6', CatBoostClassifier(random_state=42, learning_rate = 0.3, max_depth = 6)), 
+             #('CATBOOST - Config.02 - random_state=42, learning_rate = 0.3, max_depth = 8', CatBoostClassifier(random_state=42, learning_rate = 0.3, max_depth = 8)), 
+             #('CATBOOST - Config.03 - random_state=42, learning_rate = 0.2, max_depth = 6', CatBoostClassifier(random_state=42, learning_rate = 0.2, max_depth = 6)), 
+             #('CATBOOST - Config.04 - random_state=42, learning_rate = 0.2, max_depth = 8', CatBoostClassifier(random_state=42, learning_rate = 0.2, max_depth = 8)),     
+            ]
+
+#Transformando as variáveis catégóricas em binárias via get.dummies do df_01
+
+#Seleção dos atributos categóricos do df_01
+atributos_categoricos = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'FLAG_OWN_CAR', 'FLAG_OWN_REALTY',
+                         'NAME_TYPE_SUITE', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE',
+                         'NAME_FAMILY_STATUS', 'NAME_HOUSING_TYPE', 'OCCUPATION_TYPE',
+                         'WEEKDAY_APPR_PROCESS_START', 'ORGANIZATION_TYPE', 'FONDKAPREMONT_MODE',
+                         'HOUSETYPE_MODE', 'WALLSMATERIAL_MODE', 'EMERGENCYSTATE_MODE',
+                         'CREDIT_ACTIVE', 'CREDIT_CURRENCY', 'CREDIT_TYPE', 'STATUS'
+]
+
+# Transformar usando pd.get_dummies
+X_train_df_01_amostrado_dummificado = pd.get_dummies(X_train_df_01_amostrado, columns=atributos_categoricos, drop_first=True)
+
+
+# Limpar nomes das colunas (remover caracteres especiais inválidos para JSON)
+import re
+X_train_df_01_amostrado_dummificado.columns = [
+    re.sub(r'[^\w]', '', col) for col in X_train_df_01_amostrado_dummificado.columns
+]
+
+
+#Treino df_01
+from sklearn.model_selection import cross_validate
+
+Resultados_df_01=[]
+for nome, classifier in modelos:
+  scores = cross_validate(classifier, X_train_df_01_amostrado_dummificado, y_train_df_01_amostrado, scoring=['roc_auc'], cv = 10)
+  scores_roc_auc  = scores["test_roc_auc"].mean()
+  Resultados_df_01.append({'Modelo': nome,
+                    'roc_auc': scores_roc_auc})
+
+#Impressão dos Resultados df_01
+print(f'Modelo \t\t\t\t\t\t\t\t\t\t\t ROC_UAC')
+for r in Resultados_df_01:
+    print(f'{r["Modelo"]:<90}{r["roc_auc"]:.4f}')
+
+
+#Transformando as variáveis catégóricas em binárias via get.dummies do df_02
+
+#Seleção dos atributos categóricos do df_02
+atributos_categoricos = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'FLAG_OWN_CAR', 'FLAG_OWN_REALTY', 
+                         'NAME_TYPE_SUITE', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS',
+                         'NAME_HOUSING_TYPE', 'OCCUPATION_TYPE', 'WEEKDAY_APPR_PROCESS_START', 'ORGANIZATION_TYPE',
+                         'FONDKAPREMONT_MODE', 'HOUSETYPE_MODE', 'WALLSMATERIAL_MODE', 'EMERGENCYSTATE_MODE',
+                         'FLAG_LAST_APPL_PER_CONTRACT', 'NAME_CASH_LOAN_PURPOSE', 'NAME_CONTRACT_STATUS',
+                         'NAME_PAYMENT_TYPE', 'CODE_REJECT_REASON', 'NAME_CLIENT_TYPE', 'NAME_GOODS_CATEGORY',
+                         'NAME_PORTFOLIO', 'NAME_PRODUCT_TYPE', 'CHANNEL_TYPE', 'NAME_SELLER_INDUSTRY',
+                         'NAME_YIELD_GROUP', 'PRODUCT_COMBINATION'
+                        ]
+
+# Transformar usando pd.get_dummies
+X_train_df_02_amostrado_dummificado = pd.get_dummies(X_train_df_02_amostrado, columns=atributos_categoricos, drop_first=True)
+
+
+# Limpar nomes das colunas (remover caracteres especiais inválidos para JSON)
+import re
+X_train_df_02_amostrado_dummificado.columns = [
+    re.sub(r'[^\w]', '', col) for col in X_train_df_02_amostrado_dummificado.columns
+]
+
+
+#Treino df_02
+from sklearn.model_selection import cross_validate
+
+Resultados_df_02=[]
+for nome, classifier in modelos:
+  scores = cross_validate(classifier, X_train_df_02_amostrado_dummificado, y_train_df_02_amostrado, scoring=['roc_auc'], cv = 10)
+  scores_roc_auc  = scores["test_roc_auc"].mean()
+  Resultados_df_02.append({'Modelo': nome,
+                    'roc_auc': scores_roc_auc})
+#Impressão dos Resultados df_02
+print(f'Modelo \t\t\t\t\t\t\t\t\t\t\t ROC_UAC')
+for r in Resultados_df_02:
+    print(f'{r["Modelo"]:<90}{r["roc_auc"]:.4f}')
+
+#Transformando as variáveis categóricas em binárias via get.dummies do df_03
+
+#Seleção dos atributos categóricos do df_03
+atributos_categoricos = ["NAME_CONTRACT_TYPE", "CODE_GENDER", "FLAG_OWN_CAR", "FLAG_OWN_REALTY", "NAME_TYPE_SUITE",
+                        "NAME_INCOME_TYPE", "NAME_EDUCATION_TYPE", "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE",
+                        "OCCUPATION_TYPE", "WEEKDAY_APPR_PROCESS_START", "ORGANIZATION_TYPE", "FONDKAPREMONT_MODE", 
+                        "HOUSETYPE_MODE", "WALLSMATERIAL_MODE", "EMERGENCYSTATE_MODE", "FLAG_LAST_APPL_PER_CONTRACT", 
+                        "NAME_CASH_LOAN_PURPOSE", "NAME_CONTRACT_STATUS", "NAME_PAYMENT_TYPE", "CODE_REJECT_REASON", 
+                        "NAME_CLIENT_TYPE", "NAME_GOODS_CATEGORY", "NAME_PORTFOLIO", "NAME_PRODUCT_TYPE", "CHANNEL_TYPE",
+                        "NAME_SELLER_INDUSTRY","NAME_YIELD_GROUP", "PRODUCT_COMBINATION"]
+
+# Transformar usando pd.get_dummies
+X_train_df_03_amostrado_dummificado = pd.get_dummies(X_train_df_03_amostrado, columns=atributos_categoricos, drop_first=True)
+
+
+# Limpar nomes das colunas (remover caracteres especiais inválidos para JSON)
+import re
+X_train_df_03_amostrado_dummificado.columns = [
+    re.sub(r'[^\w]', '', col) for col in X_train_df_03_amostrado_dummificado.columns
+]
+
+#Treino df_03
+from sklearn.model_selection import cross_validate
+
+Resultados_df_03=[]
+for nome, classifier in modelos:
+  scores = cross_validate(classifier, X_train_df_03_amostrado_dummificado, y_train_df_03_amostrado, scoring=['roc_auc'], cv = 10)
+  scores_roc_auc  = scores["test_roc_auc"].mean()
+  Resultados_df_03.append({'Modelo': nome,
+                    'roc_auc': scores_roc_auc})
+
+#Impressão dos Resultados df_03
+print(f'Modelo \t\t\t\t\t\t\t\t\t\t\t ROC_UAC')
+for r in Resultados_df_03:
+    print(f'{r["Modelo"]:<90}{r["roc_auc"]:.4f}')
+
+#Transformando as variáveis categóricas em binárias via get.dummies do df_04
+
+#Seleção dos atributos categóricos do df_04
+atributos_categoricos = ["NAME_CONTRACT_TYPE", "CODE_GENDER", "FLAG_OWN_CAR", "FLAG_OWN_REALTY",
+                         "NAME_TYPE_SUITE", "NAME_INCOME_TYPE", "NAME_EDUCATION_TYPE",
+                         "NAME_FAMILY_STATUS", "NAME_HOUSING_TYPE", "OCCUPATION_TYPE",
+                         "WEEKDAY_APPR_PROCESS_START", "ORGANIZATION_TYPE", "FONDKAPREMONT_MODE",
+                         "HOUSETYPE_MODE", "WALLSMATERIAL_MODE", "EMERGENCYSTATE_MODE",
+                         "FLAG_LAST_APPL_PER_CONTRACT", "NAME_CASH_LOAN_PURPOSE",
+                         "NAME_CONTRACT_STATUS", "NAME_PAYMENT_TYPE", "CODE_REJECT_REASON",
+                         "NAME_CLIENT_TYPE", "NAME_GOODS_CATEGORY", "NAME_PORTFOLIO",
+                         "NAME_PRODUCT_TYPE", "CHANNEL_TYPE", "NAME_SELLER_INDUSTRY",
+                         "NAME_YIELD_GROUP", "PRODUCT_COMBINATION"
+                        ]
+
+# Transformar usando pd.get_dummies
+X_train_df_04_amostrado_dummificado = pd.get_dummies(X_train_df_04_amostrado, columns=atributos_categoricos, drop_first=True)
+
+
+# Limpar nomes das colunas (remover caracteres especiais inválidos para JSON)
+import re
+X_train_df_04_amostrado_dummificado.columns = [re.sub(r'[^\w]', '', col) for col in X_train_df_04_amostrado_dummificado.columns]
+
+#Treino df_04
+from sklearn.model_selection import cross_validate
+
+Resultados_df_04=[]
+for nome, classifier in modelos:
+  scores = cross_validate(classifier, X_train_df_04_amostrado_dummificado, y_train_df_04_amostrado, scoring=['roc_auc'], cv = 10)
+  scores_roc_auc  = scores["test_roc_auc"].mean()
+  Resultados_df_04.append({'Modelo': nome,
+                    'roc_auc': scores_roc_auc})
+
+#Impressão dos Resultados df_04
+print(f'Modelo \t\t\t\t\t\t\t\t\t\t\t ROC_UAC')
+for r in Resultados_df_04:
+    print(f'{r["Modelo"]:<90}{r["roc_auc"]:.4f}')
+
+# 2. Combinação com VotingClassifier (Hard e Soft)
+
+Pegou-se os modelos com melhores resultados dos dataframes df_01, df_02, df_03 e df_04 e aplicou-se a estratégia do VotingClassifier
+
+#Importando Bibliotecas pertinentes
+from sklearn.ensemble import VotingClassifier
+from sklearn.model_selection import StratifiedKFold, cross_val_score, GridSearchCV
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+
+def avaliar_modelo(modelo, X, y, nome="Modelo"):
+    roc_auc = []
+    for train_idx, test_idx in skf.split(X, y):
+        X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+        y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+        modelo.fit(X_train, y_train)
+        preds = modelo.predict(X_test)
+        roc_auc.append(roc_auc_score(y_test, preds))
+    print(f"{nome}: roc_auc = {np.mean(roc_auc):.4f}, desvio padrão = {np.std(roc_auc):.4f}")
+
+
+estimador_df_01 = XGBClassifier(random_state=42, learning_rate = 0.3, max_depth = 6)
+estimador_df_02 = LGBMClassifier(random_state=42, learning_rate = 0.3, max_depth = 6, force_col_wise=True)
+estimador_df_03 = LGBMClassifier(random_state=42, learning_rate = 0.3, max_depth = 6, force_col_wise=True)
+estimador_df_04 = CatBoostClassifier(random_state=42, learning_rate = 0.3, max_depth = 6)
+
+
+voting_hard = VotingClassifier(estimators=[('df_01', estimador_df_01), ('df_02', estimador_df_02), 
+                                           ('df_03', estimador_df_03), ('df_04', estimador_df_04)], voting='hard')
+voting_soft = VotingClassifier(estimators=[('df_01', estimador_df_01), ('df_02', estimador_df_02), 
+                                           ('df_03', estimador_df_03), ('df_04', estimador_df_04)], voting='soft')
+
+X = X_train_df_01_amostrado_dummificado.copy()
+y = y_train_df_01_amostrado.copy()
+
+avaliar_modelo(voting_hard, X, y, "VotingClassifier (Hard)")
+avaliar_modelo(voting_soft, X, y, "VotingClassifier (Soft)")
+
+# 3. Combinação com StackingClassifier
+
+estimador_df_01 = XGBClassifier(random_state=42, learning_rate = 0.3, max_depth = 6)
+estimador_df_02 = LGBMClassifier(random_state=42, learning_rate = 0.3, max_depth = 6, force_col_wise=True)
+estimador_df_03 = LGBMClassifier(random_state=42, learning_rate = 0.3, max_depth = 6, force_col_wise=True)
+estimador_df_04 = CatBoostClassifier(random_state=42, learning_rate = 0.3, max_depth = 6)
+
+stacking = StackingClassifier(estimators=[('df_01', estimador_df_01), ('df_02', estimador_df_02), 
+                                           ('df_03', estimador_df_03), ('df_04', estimador_df_04)], 
+                                           final_estimator=LogisticRegression(), cv=5)
+avaliar_modelo(stacking, X, y, "StackingClassifier")
+
+# Dataframes para o Kaggle
+
+X_test = df_test.copy()
+
+
+#Predição do Modelo com os dados de Teste Global
+predictions_voting      = voting_hard.predict(X_test) ## Escolher o melhor do Voting
+predictions_stacking    = stacking.predict(X_test) ## Escolher o melhor do Voting
+
+#Geração do Data Frame das predições com o Teste Global
+df_test_voting["TARGET"] = predictions_voting
+df_test_stacking["TARGET"] = predictions_stacking
+
+#Exibição do Data Frame que será enviado para o Kaggle
+df_test_voting[["SK_ID_CURR","TARGET"]]
+df_test_stacking[["SK_ID_CURR","TARGET"]]
+
+#Salvar o Data Frame que será enviado ao Kaggle em um arquivo .CSV
+df_test_voting[["SK_ID_CURR","TARGET"]].to_csv("voting.csv", index=False)
+df_test_stacking[["SK_ID_CURR","TARGET"]].to_csv("stacking.csv", index=False)
+
